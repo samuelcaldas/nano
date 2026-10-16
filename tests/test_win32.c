@@ -69,6 +69,10 @@ static void test_file_io_and_stat(void)
     assert(!S_ISDIR(st.st_mode));
 
     assert(win32_access(filename, R_OK) == 0);
+    assert(win32_access(filename, F_OK) == 0);
+    assert(win32_access(filename, X_OK) == 0);
+    assert(win32_access(".", X_OK) == 0);
+    assert(win32_access(".", R_OK | X_OK) == 0);
 
     /* Test getline */
     fp = win32_fopen(filename, "rb");

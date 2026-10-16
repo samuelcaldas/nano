@@ -8,12 +8,27 @@
 #ifdef _DEBUG
 #include <crtdbg.h>
 #endif
+#include <stdlib.h>
 
 static UINT original_cp = 0;
 static UINT original_output_cp = 0;
 static DWORD original_out_mode = 0;
 static DWORD original_in_mode = 0;
 static int console_initialized = 0;
+
+static void quiet_invalid_parameter_handler(
+    const wchar_t *expression,
+    const wchar_t *function,
+    const wchar_t *file,
+    unsigned int line,
+    uintptr_t pReserved)
+{
+    (void)expression;
+    (void)function;
+    (void)file;
+    (void)line;
+    (void)pReserved;
+}
 
 static BOOL WINAPI console_ctrl_handler(DWORD ctrl_type)
 {
@@ -40,6 +55,8 @@ void win32_console_init(void)
 
     if (console_initialized)
         return;
+
+    _set_invalid_parameter_handler(quiet_invalid_parameter_handler);
 
 #ifdef _DEBUG
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);

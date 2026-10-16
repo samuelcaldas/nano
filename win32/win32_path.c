@@ -131,27 +131,55 @@ int win32_stat(const char *path, struct stat *buf)
 
 int win32_access(const char *path, int mode)
 {
-    wchar_t *wpath = win32_utf8_to_wchar(path);
+    wchar_t *wpath;
+    int crt_mode = 0;
     int res = -1;
 
-    if (wpath) {
-        res = _waccess(wpath, mode);
-        free(wpath);
+    if (!path) {
+        errno = ENOENT;
+        return -1;
     }
 
+    wpath = win32_utf8_to_wchar(path);
+    if (!wpath) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    /* Translate POSIX access modes (0=F_OK, 1=X_OK, 2=W_OK, 4=R_OK) to MSVC CRT modes (0, 2, 4, 6) */
+    if (mode & 2) /* W_OK */
+        crt_mode |= 2;
+    if (mode & 4) /* R_OK */
+        crt_mode |= 4;
+    /* X_OK (1) has no Windows equivalent; maps to existence check if neither R nor W was set */
+
+    res = _waccess(wpath, crt_mode);
+    free(wpath);
     return res;
 }
 
 int win32_chmod(const char *path, int mode)
 {
-    wchar_t *wpath = win32_utf8_to_wchar(path);
+    wchar_t *wpath;
+    int crt_mode = _S_IREAD;
     int res = -1;
 
-    if (wpath) {
-        res = _wchmod(wpath, mode);
-        free(wpath);
+    if (!path) {
+        errno = ENOENT;
+        return -1;
     }
 
+    wpath = win32_utf8_to_wchar(path);
+    if (!wpath) {
+        errno = ENOENT;
+        return -1;
+    }
+
+    if (mode & (_S_IWRITE | 0222))
+        crt_mode |= _S_IWRITE;
+
+    res = _wchmod(wpath, crt_mode);
+    free(wpath);
     return res;
 }
 
