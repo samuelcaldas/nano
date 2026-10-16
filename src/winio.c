@@ -1350,6 +1350,9 @@ int parse_kbinput(WINDOW *frame)
 #endif
 #ifdef KEY_RESIZE  /* SunOS 5.7-5.9 doesn't know KEY_RESIZE. */
 		case KEY_RESIZE:
+#if defined(_WIN32) && !defined(NANO_TINY)
+			the_window_resized = TRUE;
+#endif
 #endif
 #ifndef NANO_TINY
 		case KEY_FRESH:

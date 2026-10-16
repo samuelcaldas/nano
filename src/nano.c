@@ -41,6 +41,9 @@
 #ifdef __linux__
 #include <sys/vt.h>
 #endif
+#ifdef _WIN32
+#include "win32_console.h"
+#endif
 
 #ifdef ENABLE_MULTIBUFFER
 #define read_them_all  TRUE
@@ -1731,6 +1734,9 @@ void process_a_keystroke(void)
 int main(int argc, char **argv)
 {
 	int stdin_flags, optchr;
+#ifdef _WIN32
+	win32_console_init();
+#endif
 #ifdef ENABLE_NANORC
 	bool ignore_rcfiles = FALSE;
 		/* Whether to ignore the nanorc files. */

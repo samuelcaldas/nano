@@ -78,3 +78,14 @@ core
 /m4/.gitignore
 /m4/gnulib-cache.m4
 /snippet/
+
+# CMake & Windows build:
+/build*/
+/out/
+/CMakeUserPresets.json
+*.exe
+*.lib
+*.pdb
+*.ilk
+*.obj
+
