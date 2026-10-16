@@ -89,20 +89,31 @@ int win32_open(const char *filename, int flags, ...)
 {
     wchar_t *wfilename = win32_utf8_to_wchar(filename);
     int fd = -1;
-    int mode = 0;
+    int crt_pmode = _S_IREAD | _S_IWRITE;
+
+    if (!wfilename) {
+        errno = ENOENT;
+        return -1;
+    }
 
     if (flags & _O_CREAT) {
         va_list ap;
         va_start(ap, flags);
-        mode = va_arg(ap, int);
+        int mode = va_arg(ap, int);
         va_end(ap);
+
+        crt_pmode = _S_IREAD;
+        if (mode & (_S_IWRITE | 0222))
+            crt_pmode |= _S_IWRITE;
     }
 
-    if (wfilename) {
-        _wsopen_s(&fd, wfilename, flags | _O_BINARY, _SH_DENYNO, mode ? mode : (_S_IREAD | _S_IWRITE));
-        free(wfilename);
+    errno_t err = _wsopen_s(&fd, wfilename, flags | _O_BINARY, _SH_DENYNO, crt_pmode);
+    if (err != 0) {
+        errno = err;
+        fd = -1;
     }
 
+    free(wfilename);
     return fd;
 }
 

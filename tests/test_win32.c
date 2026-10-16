@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 
 #include "win32_compat.h"
@@ -85,6 +86,16 @@ static void test_file_io_and_stat(void)
     free(line);
     fclose(fp);
 
+    res = win32_unlink(filename);
+    assert(res == 0);
+
+    /* Test win32_open with POSIX 0666 permissions (simulates write_file in nano) */
+    int fd = win32_open(filename, _O_WRONLY | _O_CREAT | _O_TRUNC, 0666);
+    assert(fd >= 0);
+    int written_fd = _write(fd, "test content", 12);
+    assert(written_fd == 12);
+    _close(fd);
+    assert(win32_access(filename, F_OK) == 0);
     res = win32_unlink(filename);
     assert(res == 0);
 
